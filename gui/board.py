@@ -92,72 +92,6 @@ class Board(QObject):
             bitboard ^= 1 << square
         return squares
 
-    # def flipVertical(self, bitboard):
-    #     """Flips bitboard vertically (parallel prefix approach, 4 delta swaps)."""
-    #     k1 = 0x0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff
-    #     k2 = 0x00000000ffffffff00000000ffffffff00000000ffffffff00000000ffffffff
-    #     k3 = 0x0000000000000000ffffffffffffffff0000000000000000ffffffffffffffff
-    #     bitboard = ((bitboard >> 16) & k1) | ((bitboard & k1) << 16)
-    #     bitboard = ((bitboard >> 32) & k2) | ((bitboard & k2) << 32)
-    #     bitboard = ((bitboard >> 64) & k3) | ((bitboard & k3) << 64)
-    #     bitboard = (bitboard >> 128) | (bitboard << 128)
-    #     return bitboard
-
-    # def flipHorizontal(self, bitboard):
-    #     """Flips bitboard horizontally (parallel prefix approach, 4 delta swaps)."""
-    #     k1 = 0x5555555555555555555555555555555555555555555555555555555555555555
-    #     k2 = 0x3333333333333333333333333333333333333333333333333333333333333333
-    #     k3 = 0x0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f
-    #     k4 = 0x00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00ff
-    #     bitboard = ((bitboard >> 1) & k1) | ((bitboard & k1) << 1)
-    #     bitboard = ((bitboard >> 2) & k2) | ((bitboard & k2) << 2)
-    #     bitboard = ((bitboard >> 4) & k3) | ((bitboard & k3) << 4)
-    #     bitboard = ((bitboard >> 8) & k4) | ((bitboard & k4) << 8)
-    #     return bitboard
-
-    # def flipDiagonal(self, bitboard):
-    #     """Flips bitboard about diagonal from lower left to upper right (parallel prefix approach, 4 delta swaps)."""
-    #     k1 = 0x5555000055550000555500005555000055550000555500005555000055550000
-    #     k2 = 0x3333333300000000333333330000000033333333000000003333333300000000
-    #     k3 = 0x0f0f0f0f0f0f0f0f00000000000000000f0f0f0f0f0f0f0f0000000000000000
-    #     k4 = 0x00ff00ff00ff00ff00ff00ff00ff00ff00000000000000000000000000000000
-    #     t = k4 & (bitboard ^ (bitboard << 120))
-    #     bitboard ^= t ^ (t >> 120)
-    #     t = k3 & (bitboard ^ (bitboard << 60))
-    #     bitboard ^= t ^ (t >> 60)
-    #     t = k2 & (bitboard ^ (bitboard << 30))
-    #     bitboard ^= t ^ (t >> 30)
-    #     t = k1 & (bitboard ^ (bitboard << 15))
-    #     bitboard ^= t ^ (t >> 15)
-    #     return bitboard
-
-    # def flipAntiDiagonal(self, bitboard):
-    #     """Flips bitboard about diagonal from upper left to lower right (parallel prefix approach, 4 delta swaps)."""
-    #     k1 = 0xaaaa0000aaaa0000aaaa0000aaaa0000aaaa0000aaaa0000aaaa0000aaaa0000
-    #     k2 = 0xcccccccc00000000cccccccc00000000cccccccc00000000cccccccc00000000
-    #     k3 = 0xf0f0f0f0f0f0f0f00000000000000000f0f0f0f0f0f0f0f00000000000000000
-    #     k4 = 0xff00ff00ff00ff00ff00ff00ff00ff0000ff00ff00ff00ff00ff00ff00ff00ff
-    #     t = bitboard ^ (bitboard << 136)
-    #     bitboard ^= k4 & (t ^ (bitboard >> 136))
-    #     t = k3 & (bitboard ^ (bitboard << 68))
-    #     bitboard ^= t ^ (t >> 68)
-    #     t = k2 & (bitboard ^ (bitboard << 34))
-    #     bitboard ^= t ^ (t >> 34)
-    #     t = k1 & (bitboard ^ (bitboard << 17))
-    #     bitboard ^= t ^ (t >> 17)
-    #     return bitboard
-
-    # def rotate(self, bitboard, degrees):
-    #     """Rotates bitboard +90 (clockwise), -90 (counterclockwise) or 180 degrees using two flips."""
-    #     if degrees == 90:
-    #         return self.flipVertical(self.flipDiagonal(bitboard))
-    #     elif degrees == -90:
-    #         return self.flipVertical(self.flipAntiDiagonal(bitboard))
-    #     elif degrees == 180:
-    #         return self.flipHorizontal(self.flipVertical(bitboard))
-    #     else:
-    #         pass
-
     def shiftN(self, bitboard, n=1):
         """Shifts bitboard north by n squares."""
         for _ in range(n):
@@ -431,30 +365,10 @@ class Board(QObject):
             pinner &= pinner - 1
         return pinned
 
-    # def aligned(self, origin, target, kingSquare):
-    #     """Checks if partially pinned piece is moved along ray from or towards king."""
-    #     alongRay = self.rayBetween(origin, kingSquare) & (1 << target)
-    #     alongRay |= self.rayBetween(target, kingSquare) & (1 << origin)
-    #     return alongRay
-
     def kingRay(self, square, color):
         """Returns ray from king that contains square."""
         kingSquare = self.bitScanForward(self.pieceSet(color, KING))
         return self.rayBetween(kingSquare, square) | self.rayBeyond(kingSquare, square)
-
-    # def attackers(self, square):
-    #     """Returns the set of all pieces attacking and defending the target square."""
-    #     attackers = self.pawnMoves(square, RED, True) & self.pieceSet(YELLOW, PAWN)
-    #     attackers |= self.pawnMoves(square, YELLOW, True) & self.pieceSet(RED, PAWN)
-    #     attackers |= self.pawnMoves(square, BLUE, True) & self.pieceSet(GREEN, PAWN)
-    #     attackers |= self.pawnMoves(square, GREEN, True) & self.pieceSet(BLUE, PAWN)
-    #     attackers |= self.knightMoves(square) & self.pieceBB[KNIGHT]
-    #     attackers |= self.kingMoves(square) & self.pieceBB[KING]
-    #     bishopMoves = self.maskBlockedSquares(self.bishopMoves(square), square)
-    #     attackers |= bishopMoves & (self.pieceBB[BISHOP] | self.pieceBB[QUEEN])
-    #     rookMoves = self.maskBlockedSquares(self.rookMoves(square), square)
-    #     attackers |= rookMoves & (self.pieceBB[ROOK] | self.pieceBB[QUEEN])
-    #     return attackers
 
     def attacked(self, square, color):
         """Checks if a square is attacked by a player."""
